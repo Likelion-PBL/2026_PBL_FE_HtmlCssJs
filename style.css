@@ -138,3 +138,7 @@ body {
     color: #4a6cf7;
     text-decoration: none;
 }
+
+.profile-card:hover {
+  transform: translateY(-8px);
+}
