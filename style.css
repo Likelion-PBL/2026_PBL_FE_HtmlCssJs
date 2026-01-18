@@ -19,7 +19,6 @@ body {
   gap: 64px;
 }
 
-
 .profile-card-grid {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
@@ -35,11 +34,34 @@ body {
 
   display: flex;
   flex-direction: column;
+
+  border: 2px solid transparent;
+}
+
+.profile-image {
+  position: relative;
+  margin: 0;
 }
 
 .profile-image img {
   width: 100%;
   display: block;
+}
+
+.profile-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+
+  padding: 6px 10px;
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .profile-content {
@@ -142,4 +164,15 @@ body {
 
 .skill-list li {
   font-size: 14px;
+}
+
+.profile-card.is-me {
+  border-color: #4a6cf7;
+  border-width: 3px;
+  box-shadow: 0 14px 28px rgba(74, 108, 247, 0.18);
+  transform: translateY(-2px);
+}
+
+.profile-card.is-me .part {
+  color:rgb(158, 198, 47);
 }
