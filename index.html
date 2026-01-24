@@ -5,9 +5,132 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>아기 사자 명단</title>
     <link rel="stylesheet" href="style.css" />
+    <script src="script.js" defer></script>
   </head>
   <body>
     <main class="container">
+      <section class="controls" aria-label="명단 조작">
+        <button type="button" class="control-btn" id="addLionBtn">
+          아기 사자 추가
+        </button>
+        <button type="button" class="control-btn" id="removeLionBtn">
+          마지막 아기 사자 삭제
+        </button>
+        <p class="lion-count" id="lionCount">총 0명</p>
+      </section>
+      <section class="lion-form-section" id="lionFormSection" hidden>
+        <form class="lion-form" id="lionForm" autocomplete="off">
+          <div class="form-row">
+            <label class="form-label" for="lionName">이름</label>
+            <input
+              class="form-input"
+              id="lionName"
+              name="name"
+              type="text"
+              placeholder="예: 홍아기사자"
+              required
+            />
+          </div>
+      
+          <div class="form-row">
+            <label class="form-label" for="lionPart">파트</label>
+            <select class="form-input" id="lionPart" name="part" required>
+              <option value="Frontend">Frontend</option>
+              <option value="Backend">Backend</option>
+              <option value="Design">Design</option>
+            </select>
+          </div>
+      
+          <div class="form-row form-row--full">
+            <label class="form-label" for="lionSkills">관심 기술 (쉼표로 구분)</label>
+            <input
+              class="form-input"
+              id="lionSkills"
+              name="skills"
+              type="text"
+              placeholder="예: JavaScript, React, HTML/CSS"
+              required
+            />
+          </div>
+      
+          <div class="form-row form-row--full">
+            <label class="form-label" for="lionOneLineIntro">한 줄 소개 (요약 카드)</label>
+            <input
+              class="form-input"
+              id="lionOneLineIntro"
+              name="oneLineIntro"
+              type="text"
+              placeholder="예: 3주차 DOM 조작 연습 중!"
+              required
+            />
+          </div>
+      
+          <div class="form-row form-row--full">
+            <label class="form-label" for="lionDescription">자기소개 (상세 카드)</label>
+            <textarea
+              class="form-input"
+              id="lionDescription"
+              name="description"
+              rows="4"
+              placeholder="예: HTML/CSS로 구조를 만들고, JS로 데이터를 바꾸면 화면이 바뀌는 경험을 하고 있습니다."
+              required
+            ></textarea>
+          </div>
+      
+          <div class="form-row">
+            <label class="form-label" for="lionEmail">Email</label>
+            <input
+              class="form-input"
+              id="lionEmail"
+              name="email"
+              type="email"
+              placeholder="예: lion@example.com"
+              required
+            />
+          </div>
+      
+          <div class="form-row">
+            <label class="form-label" for="lionPhone">Phone</label>
+            <input
+              class="form-input"
+              id="lionPhone"
+              name="phone"
+              type="tel"
+              placeholder="예: 010-1234-5678"
+              required
+            />
+          </div>
+      
+          <div class="form-row form-row--full">
+            <label class="form-label" for="lionWebsite">Website</label>
+            <input
+              class="form-input"
+              id="lionWebsite"
+              name="website"
+              type="url"
+              placeholder="예: https://example.com"
+              required
+            />
+          </div>
+          <div class="form-row form-row--full">
+            <label class="form-label" for="lionOneWord">한 마디</label>
+            <input
+              class="form-input"
+              id="lionOneWord"
+              name="oneWord"
+              type="text"
+              placeholder="예: 데이터 바꾸면 화면도 바뀐다!"
+              required
+            />
+          </div>
+      
+          <div class="form-actions">
+            <button type="submit" class="control-btn">추가하기</button>
+            <button type="button" class="control-btn" id="cancelLionFormBtn">취소</button>
+          </div>
+        </form>
+      </section>
+
       <section class="profile-card-grid">
         <article class="profile-card is-me">
           <figure class="profile-image">
