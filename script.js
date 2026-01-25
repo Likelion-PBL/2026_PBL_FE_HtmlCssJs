@@ -26,6 +26,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const cancelBtn = document.getElementById("cancelLionFormBtn");
   const fillRandomBtn = document.getElementById("fillRandomBtn");
 
+  const TIMEOUT_MS = 5000;
+
+  let latestRequestId = 0;
+  let latestController = null;
+
   const hasDetail = Boolean(detailList);
 
   const lions = [];
@@ -59,21 +64,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function setLoading(loading, message) {
     isLoading = loading;
 
-    const btns = [
-      addBtn,
-      removeBtn,
-      appendOneBtn,
-      appendFiveBtn,
-      refreshAllBtn,
-      retryFetchBtn,
-      fillRandomBtn,
-      cancelBtn,
-    ].filter(Boolean);
-
-    btns.forEach((btn) => {
-      if (btn && btn.tagName === "BUTTON") btn.disabled = loading;
-    });
-
     if (fetchStatus) {
       fetchStatus.textContent = message || (loading ? "불러오는 중..." : "준비 완료");
     }
@@ -95,9 +85,9 @@ document.addEventListener("DOMContentLoaded", () => {
       .filter(Boolean);
   }
 
-  async function fetchRandomUsers(count) {
+  async function fetchRandomUsers(count, signal) {
     const url = `https://randomuser.me/api/?results=${count}&nat=us,gb,ca,au,nz`;
-    const res = await fetch(url);
+    const res = await fetch(url, { signal });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     return data.results || [];
@@ -393,7 +383,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function render(list) {
-    // grid
     grid.innerHTML = "";
     if (hasDetail) detailList.innerHTML = "";
 
@@ -522,12 +511,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  async function fillFormWithRandomUser() {
+  async function fillFormWithRandomUser(ctx) {
     if (!form) return;
 
-    const users = await fetchRandomUsers(1);
+    const users = await fetchRandomUsers(1, ctx.signal);
     const user = users[0];
     if (!user) throw new Error("랜덤 유저를 불러오지 못했습니다.");
+
+    if (!ctx.isLatest()) return;
 
     const tempLion = randomUserToLion(user);
 
@@ -543,27 +534,72 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function runFetchAction(actionFn) {
+    const requestId = ++latestRequestId;
     lastFetchAction = actionFn;
+
+    if (latestController) {
+      try {
+        latestController.abort();
+      } catch (_) {}
+    }
+
+    const controller = new AbortController();
+    latestController = controller;
+
+    let timedOut = false;
+
+    const timeoutId = window.setTimeout(() => {
+      timedOut = true;
+      try {
+        controller.abort();
+      } catch (_) {}
+    }, TIMEOUT_MS);
+
+    const ctx = {
+      signal: controller.signal,
+      isLatest: () => requestId === latestRequestId,
+    };
+
     clearError();
     setLoading(true, "불러오는 중...");
 
     try {
-      await actionFn();
+      await actionFn(ctx);
+
+      if (!ctx.isLatest()) return;
+
+      window.clearTimeout(timeoutId);
+
       setLoading(false, "완료!");
       clearError();
+
       setTimeout(() => {
-        if (!isLoading) setLoading(false, "준비 완료");
+        if (ctx.isLatest() && !isLoading) setLoading(false, "준비 완료");
       }, 900);
     } catch (err) {
+      if (!ctx.isLatest()) return;
+
+      window.clearTimeout(timeoutId);
+
+      if (err?.name === "AbortError" && timedOut) {
+        setLoading(false, "실패");
+        setError("불러오기 실패: 시간 초과");
+        return;
+      }
+
+      if (err?.name === "AbortError") return;
+
       setLoading(false, "실패");
       setError(`불러오기 실패: ${err?.message || "알 수 없는 오류"}`);
       console.error(err);
     }
   }
 
-  async function appendRandom(count) {
-    const users = await fetchRandomUsers(count);
+  async function appendRandom(count, ctx) {
+    const users = await fetchRandomUsers(count, ctx.signal);
     const newLions = users.map((u) => randomUserToLion(u));
+
+    if (!ctx.isLatest()) return;
 
     lions.push(...newLions);
 
@@ -578,14 +614,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  async function refreshAll() {
+  async function refreshAll(ctx) {
     const totalCount = lions.length;
 
     const me = lions.find((l) => l.isMe === true) || null;
     const fetchCount = me ? Math.max(0, totalCount - 1) : totalCount;
 
-    const users = await fetchRandomUsers(fetchCount);
+    const users = await fetchRandomUsers(fetchCount, ctx.signal);
     const newOnes = users.map((u) => randomUserToLion(u));
+
+    if (!ctx.isLatest()) return;
 
     const nextList = me ? [me, ...newOnes] : newOnes;
 
@@ -607,13 +645,15 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   appendOneBtn?.addEventListener("click", () =>
-    runFetchAction(() => appendRandom(1))
+    runFetchAction((ctx) => appendRandom(1, ctx))
   );
+
   appendFiveBtn?.addEventListener("click", () =>
-    runFetchAction(() => appendRandom(5))
+    runFetchAction((ctx) => appendRandom(5, ctx))
   );
+
   refreshAllBtn?.addEventListener("click", () =>
-    runFetchAction(() => refreshAll())
+    runFetchAction((ctx) => refreshAll(ctx))
   );
 
   retryFetchBtn?.addEventListener("click", () => {
@@ -638,9 +678,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   fillRandomBtn?.addEventListener("click", () => {
-    runFetchAction(async () => {
+    runFetchAction(async (ctx) => {
       if (formSection && formSection.hidden) openForm();
-      await fillFormWithRandomUser();
+      await fillFormWithRandomUser(ctx);
     });
   });
 
