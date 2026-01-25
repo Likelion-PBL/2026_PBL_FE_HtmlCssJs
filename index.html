@@ -10,14 +10,62 @@
   <body>
     <main class="container">
       <section class="controls" aria-label="명단 조작">
-        <button type="button" class="control-btn" id="addLionBtn">
-          아기 사자 추가
-        </button>
-        <button type="button" class="control-btn" id="removeLionBtn">
-          마지막 아기 사자 삭제
-        </button>
-        <p class="lion-count" id="lionCount">총 0명</p>
+        <div class="controls-row">
+          <button type="button" class="control-btn" id="addLionBtn">
+            아기 사자 추가
+          </button>
+          <button type="button" class="control-btn" id="removeLionBtn">
+            마지막 아기 사자 삭제
+          </button>
+          <p class="lion-count" id="lionCount">총 0명</p>
+        </div>
+
+        <div class="controls-row controls-row--secondary" aria-label="외부 데이터 불러오기">
+          <button type="button" class="control-btn" id="appendOneBtn">
+            랜덤 1명 추가
+          </button>
+          <button type="button" class="control-btn" id="appendFiveBtn">
+            랜덤 5명 추가
+          </button>
+          <button type="button" class="control-btn" id="refreshAllBtn">
+            전체 새로고침
+          </button>
+
+          <p class="fetch-status" id="fetchStatus" role="status" aria-live="polite">
+            준비 완료
+          </p>
+
+          <button type="button" class="control-btn retry-btn" id="retryFetchBtn" hidden>
+            재시도
+          </button>
+        </div>
+
+        <div class="controls-row controls-row--secondary" aria-label="보기 옵션">
+          <label class="control-label" for="partFilter">파트</label>
+          <select class="control-input" id="partFilter">
+            <option value="ALL">전체</option>
+            <option value="Frontend">Frontend</option>
+            <option value="Backend">Backend</option>
+            <option value="Design">Design</option>
+          </select>
+
+          <label class="control-label" for="sortSelect">정렬</label>
+          <select class="control-input" id="sortSelect">
+            <option value="latest">최신추가순</option>
+            <option value="name">이름순</option>
+          </select>
+
+          <label class="control-label" for="nameSearch">검색</label>
+          <input
+            class="control-input"
+            id="nameSearch"
+            type="search"
+            placeholder="이름으로 검색"
+            autocomplete="off"
+          />
+        </div>
       </section>
+
       <section class="lion-form-section" id="lionFormSection" hidden>
         <form class="lion-form" id="lionForm" autocomplete="off">
           <div class="form-row">
@@ -31,7 +79,7 @@
               required
             />
           </div>
-      
+
           <div class="form-row">
             <label class="form-label" for="lionPart">파트</label>
             <select class="form-input" id="lionPart" name="part" required>
@@ -40,7 +88,7 @@
               <option value="Design">Design</option>
             </select>
           </div>
-      
+
           <div class="form-row form-row--full">
             <label class="form-label" for="lionSkills">관심 기술 (쉼표로 구분)</label>
             <input
@@ -52,7 +100,7 @@
               required
             />
           </div>
-      
+
           <div class="form-row form-row--full">
             <label class="form-label" for="lionOneLineIntro">한 줄 소개 (요약 카드)</label>
             <input
@@ -60,11 +108,11 @@
               id="lionOneLineIntro"
               name="oneLineIntro"
               type="text"
-              placeholder="예: 3주차 DOM 조작 연습 중!"
+              placeholder="예: 4주차 fetch 연습 중!"
               required
             />
           </div>
-      
+
           <div class="form-row form-row--full">
             <label class="form-label" for="lionDescription">자기소개 (상세 카드)</label>
             <textarea
@@ -72,11 +120,11 @@
               id="lionDescription"
               name="description"
               rows="4"
-              placeholder="예: HTML/CSS로 구조를 만들고, JS로 데이터를 바꾸면 화면이 바뀌는 경험을 하고 있습니다."
+              placeholder="예: 비동기/데이터 흐름을 학습하며 UI를 다시 그리는 구조를 연습하고 있습니다."
               required
             ></textarea>
           </div>
-      
+
           <div class="form-row">
             <label class="form-label" for="lionEmail">Email</label>
             <input
@@ -88,7 +136,7 @@
               required
             />
           </div>
-      
+
           <div class="form-row">
             <label class="form-label" for="lionPhone">Phone</label>
             <input
@@ -100,7 +148,7 @@
               required
             />
           </div>
-      
+
           <div class="form-row form-row--full">
             <label class="form-label" for="lionWebsite">Website</label>
             <input
@@ -112,6 +160,7 @@
               required
             />
           </div>
+
           <div class="form-row form-row--full">
             <label class="form-label" for="lionOneWord">한 마디</label>
             <input
@@ -119,23 +168,29 @@
               id="lionOneWord"
               name="oneWord"
               type="text"
-              placeholder="예: 데이터 바꾸면 화면도 바뀐다!"
+              placeholder="예: 데이터가 바뀌면 UI도 바뀐다!"
               required
             />
           </div>
-      
+
           <div class="form-actions">
+            <button type="button" class="control-btn" id="fillRandomBtn">
+              랜덤 값 채우기
+            </button>
+
             <button type="submit" class="control-btn">추가하기</button>
-            <button type="button" class="control-btn" id="cancelLionFormBtn">취소</button>
+            <button type="button" class="control-btn" id="cancelLionFormBtn">
+              취소
+            </button>
           </div>
         </form>
       </section>
 
-      <section class="profile-card-grid">
+      <section class="profile-card-grid" id="profileCardGrid">
         <article class="profile-card is-me">
           <figure class="profile-image">
             <span class="profile-badge">React</span>
-            <img src="https://picsum.photos/seed/1/200/200" />
+            <img src="https://picsum.photos/seed/1/200/200" alt="" />
           </figure>
           <section class="profile-content">
             <h2 class="name">김아기사자</h2>
@@ -147,7 +202,7 @@
         <article class="profile-card">
           <figure class="profile-image">
             <span class="profile-badge">Spring</span>
-            <img src="https://picsum.photos/seed/2/200/200" />
+            <img src="https://picsum.photos/seed/2/200/200" alt="" />
           </figure>
           <section class="profile-content">
             <h2 class="name">박아기사자</h2>
@@ -159,7 +214,7 @@
         <article class="profile-card">
           <figure class="profile-image">
             <span class="profile-badge">Figma</span>
-            <img src="https://picsum.photos/seed/3/200/200" />
+            <img src="https://picsum.photos/seed/3/200/200" alt="" />
           </figure>
           <section class="profile-content">
             <h2 class="name">이아기사자</h2>
@@ -171,7 +226,7 @@
         <article class="profile-card">
           <figure class="profile-image">
             <span class="profile-badge">TypeScript</span>
-            <img src="https://picsum.photos/seed/4/200/200" />
+            <img src="https://picsum.photos/seed/4/200/200" alt="" />
           </figure>
           <section class="profile-content">
             <h2 class="name">최아기사자</h2>
@@ -183,7 +238,7 @@
         <article class="profile-card">
           <figure class="profile-image">
             <span class="profile-badge">Node.js</span>
-            <img src="https://picsum.photos/seed/5/200/200" />
+            <img src="https://picsum.photos/seed/5/200/200" alt="" />
           </figure>
           <section class="profile-content">
             <h2 class="name">정아기사자</h2>
@@ -195,7 +250,7 @@
         <article class="profile-card">
           <figure class="profile-image">
             <span class="profile-badge">Design System</span>
-            <img src="https://picsum.photos/seed/6/200/200" />
+            <img src="https://picsum.photos/seed/6/200/200" alt="" />
           </figure>
           <section class="profile-content">
             <h2 class="name">오아기사자</h2>
@@ -207,7 +262,7 @@
         <article class="profile-card">
           <figure class="profile-image">
             <span class="profile-badge">CSS Grid</span>
-            <img src="https://picsum.photos/seed/7/200/200" />
+            <img src="https://picsum.photos/seed/7/200/200" alt="" />
           </figure>
           <section class="profile-content">
             <h2 class="name">윤아기사자</h2>
@@ -219,7 +274,7 @@
         <article class="profile-card">
           <figure class="profile-image">
             <span class="profile-badge">GraphQL</span>
-            <img src="https://picsum.photos/seed/8/200/200" />
+            <img src="https://picsum.photos/seed/8/200/200" alt="" />
           </figure>
           <section class="profile-content">
             <h2 class="name">한아기사자</h2>
@@ -231,7 +286,7 @@
         <article class="profile-card">
           <figure class="profile-image">
             <span class="profile-badge">Typography</span>
-            <img src="https://picsum.photos/seed/9/200/200" />
+            <img src="https://picsum.photos/seed/9/200/200" alt="" />
           </figure>
           <section class="profile-content">
             <h2 class="name">신아기사자</h2>
@@ -240,9 +295,8 @@
           </section>
         </article>
       </section>
-
-      <section class="profile-detail-list">
-
+      
+      <section class="profile-detail-list" id="profileDetailList">
         <section class="profile-detail">
           <header class="detail-header">
             <h1 class="detail-name">김아기사자</h1>
