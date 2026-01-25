@@ -8,6 +8,14 @@ document.addEventListener("DOMContentLoaded", () => {
       document.querySelector(".profile-detail-list");
   
     const addBtn = document.getElementById("addLionBtn");
+    const filterSelect = document.getElementById("partFilter");
+    let currentPartFilter = "ALL";
+
+    const lionById = new Map();
+
+    let gridEmptyEl = null;
+    let detailEmptyEl = null;
+
     const removeBtn = document.getElementById("removeLionBtn");
     const countEl = document.getElementById("lionCount");
   
@@ -33,6 +41,83 @@ document.addEventListener("DOMContentLoaded", () => {
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean);
+    }
+
+    function ensureEmptyStateEls() {
+      if (!gridEmptyEl) {
+        gridEmptyEl = document.createElement("p");
+        gridEmptyEl.className = "empty-state";
+        gridEmptyEl.setAttribute("role", "status");
+        gridEmptyEl.hidden = true;
+        grid.prepend(gridEmptyEl);
+      }
+    
+      if (hasDetail && !detailEmptyEl) {
+        detailEmptyEl = document.createElement("p");
+        detailEmptyEl.className = "empty-state";
+        detailEmptyEl.setAttribute("role", "status");
+        detailEmptyEl.hidden = true;
+        detailList.prepend(detailEmptyEl);
+      }
+    }
+    
+    function setEmptyState(totalCount, visibleCount) {
+      ensureEmptyStateEls();
+    
+      const isTrulyEmpty = totalCount === 0;
+      const isFilterEmpty = totalCount > 0 && visibleCount === 0;
+    
+      const message = isTrulyEmpty
+        ? "아직 등록된 아기사자가 없습니다."
+        : isFilterEmpty
+          ? "조건에 맞는 아기사자가 없습니다."
+          : "";
+    
+      gridEmptyEl.hidden = !(isTrulyEmpty || isFilterEmpty);
+      if (!gridEmptyEl.hidden) gridEmptyEl.textContent = message;
+    
+      if (hasDetail && detailEmptyEl) {
+        detailEmptyEl.hidden = !(isTrulyEmpty || isFilterEmpty);
+        if (!detailEmptyEl.hidden) detailEmptyEl.textContent = message;
+      }
+    }
+
+    function applyFilter() {
+      const cards = Array.from(grid.querySelectorAll(".profile-card[data-lion-id]"));
+      const details = hasDetail
+        ? Array.from(detailList.querySelectorAll(".profile-detail[data-lion-id]"))
+        : [];
+    
+      let visibleCount = 0;
+    
+      for (const card of cards) {
+        const id = Number(card.dataset.lionId);
+        const lion = lionById.get(id);
+    
+        const matches =
+          !lion
+            ? true
+            : currentPartFilter === "ALL" || lion.part === currentPartFilter;
+    
+        card.hidden = !matches;
+        if (matches) visibleCount += 1;
+      }
+    
+      if (hasDetail) {
+        for (const detail of details) {
+          const id = Number(detail.dataset.lionId);
+          const lion = lionById.get(id);
+    
+          const matches =
+            !lion
+              ? true
+              : currentPartFilter === "ALL" || lion.part === currentPartFilter;
+    
+          detail.hidden = !matches;
+        }
+      }
+    
+      setEmptyState(lions.length, visibleCount);
     }
   
     function hydrateFromDOM() {
@@ -87,7 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (oneWordText) oneWord = oneWordText;
         }
   
-        lions.push({
+        const lion = {
           id,
           name,
           part,
@@ -102,10 +187,13 @@ document.addEventListener("DOMContentLoaded", () => {
             phone: "",
             website: "",
           },
-        });
+        };
+        lions.push(lion);
+        lionById.set(id, lion);
       }
   
       updateCount();
+      applyFilter();
     }
   
     function createSummaryCard(lion) {
@@ -272,11 +360,13 @@ document.addEventListener("DOMContentLoaded", () => {
       };
   
       lions.push(lion);
+      lionById.set(id, lion);
   
       grid.appendChild(createSummaryCard(lion));
       if (hasDetail) detailList.appendChild(createDetailCard(lion));
   
       updateCount();
+      applyFilter();
       closeForm();
     }
   
@@ -296,11 +386,44 @@ document.addEventListener("DOMContentLoaded", () => {
         );
         detail?.remove();
       }
+
+      lionById.delete(removed.id);
   
       updateCount();
+      applyFilter();
     }
   
     addBtn.addEventListener("click", toggleForm);
+    function focusDetailTemporarily(el) {
+      el.classList.add("is-focused");
+      window.clearTimeout(el.__focusTimer);
+      el.__focusTimer = window.setTimeout(() => {
+        el.classList.remove("is-focused");
+      }, 900);
+    }
+    
+    function scrollToDetailById(id) {
+      if (!hasDetail) return;
+      const target = detailList.querySelector(`.profile-detail[data-lion-id="${id}"]`);
+      if (!target || target.hidden) return;
+    
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      focusDetailTemporarily(target);
+    }
+    
+    grid.addEventListener("click", (e) => {
+      const card = e.target.closest(".profile-card");
+      if (!card || card.hidden) return;
+      const id = card.dataset.lionId;
+      if (!id) return;
+      scrollToDetailById(id);
+    });
+
+    filterSelect?.addEventListener("change", (e) => {
+      currentPartFilter = e.target.value || "ALL";
+      applyFilter();
+    });    
+    
     removeBtn.addEventListener("click", removeLion);
   
     form?.addEventListener("submit", addLionFromForm);

@@ -1,3 +1,7 @@
+[hidden] {
+  display: none !important;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -23,6 +27,10 @@ body {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
   gap: 24px;
+}
+
+.profile-card-grid .empty-state {
+  grid-column: 1 / -1;
 }
 
 .profile-card {
@@ -119,6 +127,12 @@ body {
   gap: 24px;
 }
 
+.profile-detail.is-focused {
+  outline: 3px solid rgba(74, 108, 247, 0.35);
+  outline-offset: 6px;
+  scroll-margin-top: 16px;
+}
+
 .detail-header {
   display: flex;
   flex-direction: column;
@@ -200,6 +214,16 @@ body {
   font-weight: 700;
   cursor: pointer;
 }
+
+.control-select {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 
 .control-btn:hover {
   transform: translateY(-1px);
